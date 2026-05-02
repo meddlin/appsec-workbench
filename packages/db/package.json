@@ -8,12 +8,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
-  },
-  "prisma": {
-    "schema": "prisma/schema.prisma"
+    "db:generate": "cd ../.. && prisma generate --schema packages/db/prisma/schema.prisma",
+    "db:migrate": "cd ../.. && prisma migrate dev --schema packages/db/prisma/schema.prisma",
+    "db:studio": "cd ../.. && prisma studio --schema packages/db/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0"

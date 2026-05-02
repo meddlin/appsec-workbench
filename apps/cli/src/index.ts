@@ -7,6 +7,7 @@ import type {
   Logger,
   ModuleContext,
 } from "@github-inventory/core";
+import type { Prisma } from "@github-inventory/db";
 import { findModuleById, listModules } from "@github-inventory/modules";
 
 const logger: Logger = {
@@ -25,9 +26,10 @@ function writeLog(
   console.error(`[${level}] ${message}${suffix}`);
 }
 
-function createModuleContext(): ModuleContext {
+function createModuleContext(runId?: string): ModuleContext {
   return {
     logger,
+    runId,
   };
 }
 
@@ -49,6 +51,14 @@ function printEvaluationSummary(results: ControlEvaluationResult[]): void {
   console.log(
     `Summary: ${results.length} controls evaluated (${summary.pass} pass, ${summary.fail} fail, ${summary.unknown} unknown).`,
   );
+}
+
+function toJsonValue(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 const program = new Command();
@@ -97,8 +107,49 @@ program
       return;
     }
 
-    const result = await module.ingest(createModuleContext());
-    console.log(JSON.stringify(result, null, 2));
+    const { prisma } = await import("@github-inventory/db");
+    let moduleRun: { id: string } | undefined;
+
+    try {
+      moduleRun = await prisma.moduleRun.create({
+        data: {
+          moduleId: module.id,
+          status: "running",
+        },
+      });
+
+      const result = await module.ingest(createModuleContext(moduleRun.id));
+      const finalStatus = result.status === "failed" ? "failed" : "success";
+
+      await prisma.moduleRun.update({
+        where: { id: moduleRun.id },
+        data: {
+          status: finalStatus,
+          finishedAt: new Date(),
+          summary: toJsonValue(result),
+        },
+      });
+
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      const message = getErrorMessage(error);
+
+      if (moduleRun) {
+        await prisma.moduleRun.update({
+          where: { id: moduleRun.id },
+          data: {
+            status: "failed",
+            finishedAt: new Date(),
+            error: message,
+          },
+        });
+      }
+
+      console.error(`Module run failed: ${message}`);
+      process.exitCode = 1;
+    } finally {
+      await prisma.$disconnect();
+    }
   });
 
 program
@@ -107,6 +158,7 @@ program
   .action(async () => {
     const evaluators = listModules().filter(hasEvaluate);
     const allResults: ControlEvaluationResult[] = [];
+    let shouldDisconnectDb = false;
 
     if (evaluators.length === 0) {
       console.log("No modules with evaluation support registered.");
@@ -114,13 +166,21 @@ program
       return;
     }
 
-    for (const module of evaluators) {
-      const results = await module.evaluate(createModuleContext());
-      allResults.push(...results);
-      console.log(`${module.id}: ${results.length} controls evaluated`);
-    }
+    try {
+      for (const module of evaluators) {
+        shouldDisconnectDb = true;
+        const results = await module.evaluate(createModuleContext());
+        allResults.push(...results);
+        console.log(`${module.id}: ${results.length} controls evaluated`);
+      }
 
-    printEvaluationSummary(allResults);
+      printEvaluationSummary(allResults);
+    } finally {
+      if (shouldDisconnectDb) {
+        const { prisma } = await import("@github-inventory/db");
+        await prisma.$disconnect();
+      }
+    }
   });
 
 const syncCommand = program

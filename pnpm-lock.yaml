@@ -17,6 +17,9 @@ importers:
       '@github-inventory/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@github-inventory/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@github-inventory/modules':
         specifier: workspace:*
         version: link:../../packages/modules
@@ -89,6 +92,9 @@ importers:
       '@github-inventory/core':
         specifier: workspace:*
         version: link:../core
+      '@github-inventory/db':
+        specifier: workspace:*
+        version: link:../db
     devDependencies:
       typescript:
         specifier: ^5.9.0

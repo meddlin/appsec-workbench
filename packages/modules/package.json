@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@github-inventory/core": "workspace:*"
+    "@github-inventory/core": "workspace:*",
+    "@github-inventory/db": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

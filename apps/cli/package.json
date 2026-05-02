@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@github-inventory/core": "workspace:*",
+    "@github-inventory/db": "workspace:*",
     "@github-inventory/modules": "workspace:*",
     "commander": "^14.0.0"
   },

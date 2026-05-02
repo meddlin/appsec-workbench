@@ -1,6 +1,7 @@
 import type { AppSecModule } from "@github-inventory/core";
+import { demoRepoInventoryModule } from "./demo-repo-inventory";
 
-const registeredModules: AppSecModule[] = [];
+const registeredModules: AppSecModule[] = [demoRepoInventoryModule];
 
 export function listModules(): readonly AppSecModule[] {
   return registeredModules;

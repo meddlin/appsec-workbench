@@ -25,6 +25,7 @@ export interface IngestResult {
 export type ControlEvaluationStatus = "pass" | "fail" | "unknown";
 
 export interface ControlEvaluationResult {
+  repositoryId: string;
   controlId: string;
   status: ControlEvaluationStatus;
   message?: string;
