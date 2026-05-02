@@ -33,6 +33,18 @@ The CLI will run modules through the module registry.
 
 Postgres is the local datastore. Prisma will provide the schema, migrations, and typed database access.
 
+## Data Model
+
+The initial Prisma schema lives in `packages/db/prisma/schema.prisma`.
+
+- `Organization` stores GitHub owners and groups their repositories.
+- `Repository` stores repository inventory records and links to one `RepositorySetting` record for security-relevant settings.
+- `Control` defines the checks the system can evaluate.
+- `ControlEvaluation` records the result of evaluating a control for a repository, optionally tied to a `ModuleRun`.
+- `Finding` records actionable issues found on repositories, optionally tied to a control.
+- `Exception` records approved suppressions for a repository, control, or finding.
+- `ModuleRun` records ingestion or evaluation runs from the CLI.
+
 ## Version 1 Boundaries
 
 - no GitHub webhooks

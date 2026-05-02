@@ -37,6 +37,14 @@ Start local Postgres:
 docker compose up -d postgres
 ```
 
+Run Prisma commands:
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+pnpm db:studio
+```
+
 Stop local Postgres:
 
 ```bash
