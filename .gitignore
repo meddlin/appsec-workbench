@@ -1,60 +1,36 @@
-/postgres-data
-/pgadmin-data
-
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-__pycache__/
-
-# virtual environment
-venv/*
-venv
-*.pyc
-*.cpython
-
-# Ignore sqlite database files
-*.db
-
-*/bin
-*/include
-*/lib
-*pyvenv.cfg
-
-
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.js
 
-# testing
-/coverage
+# build output
+dist/
+build/
+out/
+.next/
+coverage/
 
-# next.js
-/.next/
-/out/
+# local data
+postgres-data/
+pgadmin-data/
+*.db
 
-# production
-/build
-/apps/web/dist
-/apps/web/node_modules
-**/.pytest_cache
-**/.venv
-/.coverage
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
+# env
+.env
 .env*.local
 
-# vercel
-.vercel
+# logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# system
+.DS_Store
+*.pem
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env
+
+# vercel
+.vercel

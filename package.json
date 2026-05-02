@@ -1,0 +1,15 @@
+{
+  "name": "github-inventory",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "dev:web": "pnpm --filter @github-inventory/web dev",
+    "cli": "pnpm --filter @github-inventory/cli"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
+}
