@@ -33,6 +33,11 @@ venv
 
 # production
 /build
+/apps/web/dist
+/apps/web/node_modules
+**/.pytest_cache
+**/.venv
+/.coverage
 
 # misc
 .DS_Store
