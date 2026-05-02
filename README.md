@@ -31,6 +31,18 @@ Install dependencies:
 pnpm install
 ```
 
+Start local Postgres:
+
+```bash
+docker compose up -d postgres
+```
+
+Stop local Postgres:
+
+```bash
+docker compose down
+```
+
 Run workspace checks:
 
 ```bash
