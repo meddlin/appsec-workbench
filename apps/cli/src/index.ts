@@ -1,6 +1,9 @@
 #!/usr/bin/env tsx
 
 import { Command } from "commander";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type {
   AppSecModule,
   ControlEvaluationResult,
@@ -9,6 +12,8 @@ import type {
 } from "@github-inventory/core";
 import type { Prisma } from "@github-inventory/db";
 import { findModuleById, listModules } from "@github-inventory/modules";
+
+loadRootEnv();
 
 const logger: Logger = {
   debug: (message, metadata) => writeLog("debug", message, metadata),
@@ -59,6 +64,39 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function loadRootEnv(): void {
+  const cliDir = dirname(fileURLToPath(import.meta.url));
+  const envPath = resolve(cliDir, "../../../.env");
+
+  try {
+    const content = readFileSync(envPath, "utf8");
+
+    for (const line of content.split(/\r?\n/)) {
+      const trimmedLine = line.trim();
+
+      if (!trimmedLine || trimmedLine.startsWith("#")) {
+        continue;
+      }
+
+      const separatorIndex = trimmedLine.indexOf("=");
+
+      if (separatorIndex === -1) {
+        continue;
+      }
+
+      const key = trimmedLine.slice(0, separatorIndex).trim();
+      const rawValue = trimmedLine.slice(separatorIndex + 1).trim();
+      const value = rawValue.replace(/^["']|["']$/g, "");
+
+      if (key && process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    }
+  } catch {
+    // The CLI can still run with env vars supplied directly by the shell.
+  }
 }
 
 const program = new Command();

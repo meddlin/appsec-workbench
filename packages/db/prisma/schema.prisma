@@ -51,36 +51,40 @@ model Organization {
 }
 
 model Repository {
-  id             String             @id @default(cuid())
-  organizationId String
-  githubId       String?            @unique
-  name           String
-  fullName       String             @unique
-  visibility     RepositoryVisibility
-  defaultBranch  String?
-  archived       Boolean            @default(false)
-  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  setting        RepositorySetting?
-  findings       Finding[]
-  evaluations    ControlEvaluation[]
-  exceptions     Exception[]
-  moduleRuns     ModuleRun[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id              String               @id @default(cuid())
+  organizationId  String
+  githubId        String?              @unique
+  name            String
+  fullName        String               @unique
+  visibility      RepositoryVisibility
+  defaultBranch   String?
+  primaryLanguage String?
+  archived        Boolean              @default(false)
+  pushedAt        DateTime?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  setting         RepositorySetting?
+  findings        Finding[]
+  evaluations     ControlEvaluation[]
+  exceptions      Exception[]
+  moduleRuns      ModuleRun[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([organizationId])
 }
 
 model RepositorySetting {
-  id                    String     @id @default(cuid())
-  repositoryId          String     @unique
-  hasBranchProtection   Boolean?
-  hasDependabotAlerts   Boolean?
-  hasSecretScanning     Boolean?
-  hasCodeScanning       Boolean?
-  repository            Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  id                  String     @id @default(cuid())
+  repositoryId        String     @unique
+  hasBranchProtection Boolean?
+  hasDependabotAlerts Boolean?
+  hasSecretScanning   Boolean?
+  hasCodeScanning     Boolean?
+  repository          Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 }
 
 model Finding {
@@ -155,17 +159,17 @@ model Exception {
 }
 
 model ModuleRun {
-  id             String          @id @default(cuid())
+  id             String              @id @default(cuid())
   moduleId       String
   organizationId String?
   repositoryId   String?
   status         ModuleRunStatus
-  startedAt      DateTime        @default(now())
+  startedAt      DateTime            @default(now())
   finishedAt     DateTime?
   summary        Json?
   error          String?
-  organization   Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  repository     Repository?     @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  organization   Organization?       @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  repository     Repository?         @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
   evaluations    ControlEvaluation[]
 
   @@index([moduleId])

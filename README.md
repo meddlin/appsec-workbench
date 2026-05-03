@@ -45,6 +45,20 @@ pnpm db:migrate
 pnpm db:studio
 ```
 
+Run the real repository inventory sync:
+
+```bash
+GITHUB_TOKEN=ghp_your_token GITHUB_OWNER=your-username-or-org pnpm --filter @github-inventory/cli appsec run repo-inventory
+```
+
+For personal repositories, set `GITHUB_OWNER` to your GitHub username. For organization repositories, set it to the organization login. `GITHUB_OWNER_TYPE` can be `auto`, `user`, or `org`; `auto` tries organization repositories first, then falls back to user repositories.
+
+Or set `GITHUB_TOKEN`, `GITHUB_OWNER`, and optionally `GITHUB_OWNER_TYPE` in `.env` before running:
+
+```bash
+pnpm --filter @github-inventory/cli appsec run repo-inventory
+```
+
 Stop local Postgres:
 
 ```bash

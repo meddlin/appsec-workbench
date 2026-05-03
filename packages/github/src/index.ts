@@ -1,9 +1,13 @@
 export interface GitHubClientConfig {
   token: string;
-  org: string;
+  owner?: string;
+  org?: string;
+  ownerType?: GitHubOwnerType;
   baseUrl?: string;
   fetch?: FetchLike;
 }
+
+export type GitHubOwnerType = "auto" | "org" | "user";
 
 export interface GitHubRepository {
   id: number;
@@ -14,7 +18,21 @@ export interface GitHubRepository {
   html_url: string;
   default_branch: string;
   archived: boolean;
+  owner: {
+    id: number;
+    login: string;
+    type?: string;
+  };
+  language: string | null;
+  pushed_at: string | null;
+  created_at: string;
+  updated_at: string;
   visibility?: string;
+}
+
+export interface GitHubAuthenticatedUser {
+  id: number;
+  login: string;
 }
 
 export interface GitHubBranchProtection {
@@ -59,7 +77,9 @@ export interface GitHubDependabotAlert {
 
 export interface GitHubEnvironment {
   GITHUB_TOKEN?: string;
+  GITHUB_OWNER?: string;
   GITHUB_ORG?: string;
+  GITHUB_OWNER_TYPE?: string;
 }
 
 export interface FetchRequestInit {
@@ -83,7 +103,11 @@ export type FetchLike = (
   init?: FetchRequestInit,
 ) => Promise<FetchResponseLike>;
 
-interface GitHubClientOptions extends Required<Omit<GitHubClientConfig, "fetch">> {
+interface GitHubClientOptions {
+  token: string;
+  owner: string;
+  ownerType: GitHubOwnerType;
+  baseUrl: string;
   fetch: FetchLike;
 }
 
@@ -103,20 +127,40 @@ export function readGitHubConfigFromEnv(
   env: GitHubEnvironment = process.env,
 ): GitHubClientConfig {
   const token = env.GITHUB_TOKEN?.trim();
-  const org = env.GITHUB_ORG?.trim();
+  const owner = env.GITHUB_OWNER?.trim() || env.GITHUB_ORG?.trim();
+  const ownerType = parseGitHubOwnerType(env.GITHUB_OWNER_TYPE);
 
   if (!token) {
     throw new Error("GITHUB_TOKEN is required.");
   }
 
-  if (!org) {
-    throw new Error("GITHUB_ORG is required.");
+  if (!owner) {
+    throw new Error("GITHUB_OWNER or GITHUB_ORG is required.");
   }
 
   return {
     token,
-    org,
+    owner,
+    ownerType,
   };
+}
+
+export function parseGitHubOwnerType(value: string | undefined): GitHubOwnerType {
+  if (!value) {
+    return "auto";
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (
+    normalizedValue === "auto" ||
+    normalizedValue === "org" ||
+    normalizedValue === "user"
+  ) {
+    return normalizedValue;
+  }
+
+  throw new Error("GITHUB_OWNER_TYPE must be one of: auto, org, user.");
 }
 
 export function createGitHubApiUrl(
@@ -163,19 +207,20 @@ export function createGitHubHeaders(token: string): Record<string, string> {
 
 export function createGitHubClient(config: GitHubClientConfig): GitHubClient {
   const token = config.token.trim();
-  const org = config.org.trim();
+  const owner = (config.owner ?? config.org)?.trim();
 
   if (!token) {
     throw new Error("GitHub token is required.");
   }
 
-  if (!org) {
-    throw new Error("GitHub organization is required.");
+  if (!owner) {
+    throw new Error("GitHub owner is required.");
   }
 
   return new GitHubClient({
     token,
-    org,
+    owner,
+    ownerType: config.ownerType ?? "auto",
     baseUrl: config.baseUrl ?? "https://api.github.com",
     fetch: config.fetch ?? fetch,
   });
@@ -195,12 +240,23 @@ export class GitHubClient {
   }
 
   async listRepositories(): Promise<GitHubRepository[]> {
-    return this.paginate<GitHubRepository>(
-      createGitHubApiUrl(this.options.baseUrl, `/orgs/${this.options.org}/repos`, {
-        per_page: 100,
-        type: "all",
-      }),
-    );
+    if (this.options.ownerType === "org") {
+      return this.listOrganizationRepositories();
+    }
+
+    if (this.options.ownerType === "user") {
+      return this.listUserRepositories();
+    }
+
+    try {
+      return await this.listOrganizationRepositories();
+    } catch (error) {
+      if (error instanceof GitHubApiError && error.status === 404) {
+        return this.listUserRepositories();
+      }
+
+      throw error;
+    }
   }
 
   async getBranchProtection(
@@ -239,6 +295,42 @@ export class GitHubClient {
           per_page: 100,
         },
       ),
+    );
+  }
+
+  private async listOrganizationRepositories(): Promise<GitHubRepository[]> {
+    return this.paginate<GitHubRepository>(
+      createGitHubApiUrl(this.options.baseUrl, `/orgs/${this.options.owner}/repos`, {
+        per_page: 100,
+        type: "all",
+      }),
+    );
+  }
+
+  private async listUserRepositories(): Promise<GitHubRepository[]> {
+    const authenticatedUser = await this.getAuthenticatedUser();
+
+    if (authenticatedUser.login.toLowerCase() === this.options.owner.toLowerCase()) {
+      return this.paginate<GitHubRepository>(
+        createGitHubApiUrl(this.options.baseUrl, "/user/repos", {
+          affiliation: "owner",
+          per_page: 100,
+          visibility: "all",
+        }),
+      );
+    }
+
+    return this.paginate<GitHubRepository>(
+      createGitHubApiUrl(this.options.baseUrl, `/users/${this.options.owner}/repos`, {
+        per_page: 100,
+        type: "owner",
+      }),
+    );
+  }
+
+  private async getAuthenticatedUser(): Promise<GitHubAuthenticatedUser> {
+    return this.request<GitHubAuthenticatedUser>(
+      createGitHubApiUrl(this.options.baseUrl, "/user"),
     );
   }
 
