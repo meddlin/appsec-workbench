@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RepositoryVisibility {
+  public
+  private
+  internal
+}
+
+enum FindingSeverity {
+  info
+  low
+  medium
+  high
+  critical
+}
+
+enum FindingStatus {
+  open
+  resolved
+  excepted
+}
+
+enum ControlEvaluationStatus {
+  pass
+  fail
+  unknown
+}
+
+enum ModuleRunStatus {
+  running
+  success
+  failed
+}
+
+model Organization {
+  id           String       @id @default(cuid())
+  githubId     String?      @unique
+  login        String       @unique
+  name         String?
+  repositories Repository[]
+  moduleRuns   ModuleRun[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Repository {
+  id              String               @id @default(cuid())
+  organizationId  String
+  githubId        String?              @unique
+  name            String
+  fullName        String               @unique
+  visibility      RepositoryVisibility
+  defaultBranch   String?
+  primaryLanguage String?
+  archived        Boolean              @default(false)
+  pushedAt        DateTime?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  setting         RepositorySetting?
+  findings        Finding[]
+  dependabotAlerts DependabotAlert[]
+  evaluations     ControlEvaluation[]
+  exceptions      Exception[]
+  moduleRuns      ModuleRun[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([organizationId])
+}
+
+model RepositorySetting {
+  id                  String     @id @default(cuid())
+  repositoryId        String     @unique
+  hasBranchProtection Boolean?
+  hasDependabotAlerts Boolean?
+  hasSecretScanning   Boolean?
+  hasCodeScanning     Boolean?
+  repository          Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+}
+
+model Finding {
+  id           String          @id @default(cuid())
+  repositoryId String
+  controlId    String?
+  title        String
+  severity     FindingSeverity
+  status       FindingStatus   @default(open)
+  details      Json?
+  firstSeenAt  DateTime        @default(now())
+  lastSeenAt   DateTime        @default(now())
+  resolvedAt   DateTime?
+  repository   Repository      @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  control      Control?        @relation(fields: [controlId], references: [id], onDelete: SetNull)
+  exceptions   Exception[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([repositoryId])
+  @@index([controlId])
+  @@index([status])
+}
+
+model DependabotAlert {
+  id                     String     @id @default(cuid())
+  repositoryId           String
+  githubNumber           Int
+  state                  String
+  severity               String?
+  packageName            String?
+  ecosystem              String?
+  manifestPath           String?
+  dependencyScope        String?
+  ghsaId                 String?
+  cveId                  String?
+  advisorySummary        String?
+  vulnerableVersionRange String?
+  patchedVersions        String?
+  htmlUrl                String?
+  githubCreatedAt        DateTime?
+  githubUpdatedAt        DateTime?
+  fixedAt                DateTime?
+  dismissedAt            DateTime?
+  raw                    Json?
+  firstSeenAt            DateTime   @default(now())
+  lastSeenAt             DateTime   @default(now())
+  repository             Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  @@unique([repositoryId, githubNumber])
+  @@index([repositoryId])
+  @@index([state])
+  @@index([severity])
+  @@index([lastSeenAt])
+}
+
+model Control {
+  id          String              @id @default(cuid())
+  key         String              @unique
+  name        String
+  description String?
+  findings    Finding[]
+  evaluations ControlEvaluation[]
+  exceptions  Exception[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model ControlEvaluation {
+  id           String                  @id @default(cuid())
+  repositoryId String
+  controlId    String
+  moduleRunId  String?
+  status       ControlEvaluationStatus
+  message      String?
+  evidence     Json?
+  evaluatedAt  DateTime                @default(now())
+  repository   Repository              @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  control      Control                 @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  moduleRun    ModuleRun?              @relation(fields: [moduleRunId], references: [id], onDelete: SetNull)
+
+  @@index([repositoryId])
+  @@index([controlId])
+  @@index([moduleRunId])
+}
+
+model Exception {
+  id           String     @id @default(cuid())
+  repositoryId String
+  controlId    String?
+  findingId    String?
+  reason       String
+  approvedBy   String?
+  expiresAt    DateTime?
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  control      Control?   @relation(fields: [controlId], references: [id], onDelete: SetNull)
+  finding      Finding?   @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([repositoryId])
+  @@index([controlId])
+  @@index([findingId])
+}
+
+model ModuleRun {
+  id             String              @id @default(cuid())
+  moduleId       String
+  organizationId String?
+  repositoryId   String?
+  status         ModuleRunStatus
+  startedAt      DateTime            @default(now())
+  finishedAt     DateTime?
+  summary        Json?
+  error          String?
+  organization   Organization?       @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  repository     Repository?         @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  evaluations    ControlEvaluation[]
+
+  @@index([moduleId])
+  @@index([organizationId])
+  @@index([repositoryId])
+  @@index([status])
+}
