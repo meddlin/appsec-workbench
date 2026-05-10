@@ -66,6 +66,7 @@ model Repository {
   organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   setting         RepositorySetting?
   findings        Finding[]
+  dependabotAlerts DependabotAlert[]
   evaluations     ControlEvaluation[]
   exceptions      Exception[]
   moduleRuns      ModuleRun[]
@@ -107,6 +108,40 @@ model Finding {
   @@index([repositoryId])
   @@index([controlId])
   @@index([status])
+}
+
+model DependabotAlert {
+  id                     String     @id @default(cuid())
+  repositoryId           String
+  githubNumber           Int
+  state                  String
+  severity               String?
+  packageName            String?
+  ecosystem              String?
+  manifestPath           String?
+  dependencyScope        String?
+  ghsaId                 String?
+  cveId                  String?
+  advisorySummary        String?
+  vulnerableVersionRange String?
+  patchedVersions        String?
+  htmlUrl                String?
+  githubCreatedAt        DateTime?
+  githubUpdatedAt        DateTime?
+  fixedAt                DateTime?
+  dismissedAt            DateTime?
+  raw                    Json?
+  firstSeenAt            DateTime   @default(now())
+  lastSeenAt             DateTime   @default(now())
+  repository             Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  @@unique([repositoryId, githubNumber])
+  @@index([repositoryId])
+  @@index([state])
+  @@index([severity])
+  @@index([lastSeenAt])
 }
 
 model Control {

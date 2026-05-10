@@ -7,13 +7,20 @@ import { fileURLToPath } from "node:url";
 import type {
   AppSecModule,
   ControlEvaluationResult,
+  IngestResult,
   Logger,
   ModuleContext,
 } from "@github-inventory/core";
-import type { Prisma } from "@github-inventory/db";
+import type { Prisma, PrismaClient } from "@github-inventory/db";
 import { findModuleById, listModules } from "@github-inventory/modules";
 
 loadRootEnv();
+
+const scheduledModuleIds = [
+  "repo-inventory",
+  "branch-protection",
+  "dependabot-alerts",
+];
 
 const logger: Logger = {
   debug: (message, metadata) => writeLog("debug", message, metadata),
@@ -45,16 +52,24 @@ function hasEvaluate(
 }
 
 function printEvaluationSummary(results: ControlEvaluationResult[]): void {
-  const summary = results.reduce(
+  const summary = summarizeEvaluationResults(results);
+
+  console.log(
+    `Summary: ${results.length} controls evaluated (${summary.pass} pass, ${summary.fail} fail, ${summary.unknown} unknown).`,
+  );
+}
+
+function summarizeEvaluationResults(results: ControlEvaluationResult[]): {
+  pass: number;
+  fail: number;
+  unknown: number;
+} {
+  return results.reduce(
     (counts, result) => {
       counts[result.status] += 1;
       return counts;
     },
     { pass: 0, fail: 0, unknown: 0 },
-  );
-
-  console.log(
-    `Summary: ${results.length} controls evaluated (${summary.pass} pass, ${summary.fail} fail, ${summary.unknown} unknown).`,
   );
 }
 
@@ -64,6 +79,159 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+async function runModuleIngest(
+  prisma: PrismaClient,
+  module: AppSecModule,
+): Promise<
+  | {
+      status: "success";
+      moduleId: string;
+      result: IngestResult;
+    }
+  | {
+      status: "failed";
+      moduleId: string;
+      message: string;
+    }
+> {
+  if (!module.ingest) {
+    return {
+      status: "failed",
+      moduleId: module.id,
+      message: "Module does not support ingestion.",
+    };
+  }
+
+  const moduleRun = await prisma.moduleRun.create({
+    data: {
+      moduleId: module.id,
+      status: "running",
+    },
+  });
+
+  try {
+    const result = await module.ingest(createModuleContext(moduleRun.id));
+    const finalStatus = result.status === "failed" ? "failed" : "success";
+
+    await prisma.moduleRun.update({
+      where: { id: moduleRun.id },
+      data: {
+        status: finalStatus,
+        finishedAt: new Date(),
+        summary: toJsonValue(result),
+      },
+    });
+
+    if (finalStatus === "failed") {
+      return {
+        status: "failed",
+        moduleId: module.id,
+        message: result.message ?? "Module reported failure.",
+      };
+    }
+
+    return {
+      status: "success",
+      moduleId: module.id,
+      result,
+    };
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    await prisma.moduleRun.update({
+      where: { id: moduleRun.id },
+      data: {
+        status: "failed",
+        finishedAt: new Date(),
+        error: message,
+      },
+    });
+
+    return {
+      status: "failed",
+      moduleId: module.id,
+      message,
+    };
+  }
+}
+
+async function runComplianceEvaluation(
+  prisma: PrismaClient,
+): Promise<
+  | {
+      status: "success";
+      results: ControlEvaluationResult[];
+      summary: ReturnType<typeof summarizeEvaluationResults>;
+    }
+  | {
+      status: "failed";
+      results: ControlEvaluationResult[];
+      summary: ReturnType<typeof summarizeEvaluationResults>;
+      message: string;
+    }
+> {
+  const evaluators = listModules().filter(hasEvaluate);
+  const moduleRun = await prisma.moduleRun.create({
+    data: {
+      moduleId: "compliance-evaluation",
+      status: "running",
+    },
+  });
+  const allResults: ControlEvaluationResult[] = [];
+
+  try {
+    for (const module of evaluators) {
+      const results = await module.evaluate(createModuleContext(moduleRun.id));
+      allResults.push(...results);
+    }
+
+    const summary = summarizeEvaluationResults(allResults);
+
+    await prisma.moduleRun.update({
+      where: { id: moduleRun.id },
+      data: {
+        status: "success",
+        finishedAt: new Date(),
+        summary: toJsonValue({
+          moduleCount: evaluators.length,
+          resultCount: allResults.length,
+          ...summary,
+        }),
+      },
+    });
+
+    return {
+      status: "success",
+      results: allResults,
+      summary,
+    };
+  } catch (error) {
+    const message = getErrorMessage(error);
+    const summary = summarizeEvaluationResults(allResults);
+
+    await prisma.moduleRun.update({
+      where: { id: moduleRun.id },
+      data: {
+        status: "failed",
+        finishedAt: new Date(),
+        summary: toJsonValue({
+          moduleCount: evaluators.length,
+          resultCount: allResults.length,
+          ...summary,
+        }),
+        error: message,
+      },
+    });
+
+    return {
+      status: "failed",
+      results: allResults,
+      summary,
+      message,
+    };
+  }
 }
 
 function loadRootEnv(): void {
@@ -146,45 +314,17 @@ program
     }
 
     const { prisma } = await import("@github-inventory/db");
-    let moduleRun: { id: string } | undefined;
 
     try {
-      moduleRun = await prisma.moduleRun.create({
-        data: {
-          moduleId: module.id,
-          status: "running",
-        },
-      });
+      const outcome = await runModuleIngest(prisma, module);
 
-      const result = await module.ingest(createModuleContext(moduleRun.id));
-      const finalStatus = result.status === "failed" ? "failed" : "success";
-
-      await prisma.moduleRun.update({
-        where: { id: moduleRun.id },
-        data: {
-          status: finalStatus,
-          finishedAt: new Date(),
-          summary: toJsonValue(result),
-        },
-      });
-
-      console.log(JSON.stringify(result, null, 2));
-    } catch (error) {
-      const message = getErrorMessage(error);
-
-      if (moduleRun) {
-        await prisma.moduleRun.update({
-          where: { id: moduleRun.id },
-          data: {
-            status: "failed",
-            finishedAt: new Date(),
-            error: message,
-          },
-        });
+      if (outcome.status === "failed") {
+        console.error(`Module run failed: ${outcome.message}`);
+        process.exitCode = 1;
+        return;
       }
 
-      console.error(`Module run failed: ${message}`);
-      process.exitCode = 1;
+      console.log(JSON.stringify(outcome.result, null, 2));
     } finally {
       await prisma.$disconnect();
     }
@@ -194,30 +334,23 @@ program
   .command("evaluate")
   .description("Evaluate controls for modules that support evaluation")
   .action(async () => {
-    const evaluators = listModules().filter(hasEvaluate);
-    const allResults: ControlEvaluationResult[] = [];
-    let shouldDisconnectDb = false;
-
-    if (evaluators.length === 0) {
-      console.log("No modules with evaluation support registered.");
-      printEvaluationSummary(allResults);
-      return;
-    }
+    const { prisma } = await import("@github-inventory/db");
 
     try {
-      for (const module of evaluators) {
-        shouldDisconnectDb = true;
-        const results = await module.evaluate(createModuleContext());
-        allResults.push(...results);
-        console.log(`${module.id}: ${results.length} controls evaluated`);
+      const outcome = await runComplianceEvaluation(prisma);
+
+      if (outcome.results.length === 0) {
+        console.log("No controls evaluated.");
+      } else {
+        printEvaluationSummary(outcome.results);
       }
 
-      printEvaluationSummary(allResults);
-    } finally {
-      if (shouldDisconnectDb) {
-        const { prisma } = await import("@github-inventory/db");
-        await prisma.$disconnect();
+      if (outcome.status === "failed") {
+        console.error(`Compliance evaluation failed: ${outcome.message}`);
+        process.exitCode = 1;
       }
+    } finally {
+      await prisma.$disconnect();
     }
   });
 
@@ -228,8 +361,96 @@ const syncCommand = program
 syncCommand
   .command("scheduled")
   .description("Run the scheduled sync entrypoint")
-  .action(() => {
-    console.log("Scheduled sync is not implemented yet. No GitHub calls were made.");
+  .action(async () => {
+    const { prisma } = await import("@github-inventory/db");
+    const syncOutcomes: Array<{
+      moduleId: string;
+      status: "success" | "failed" | "skipped";
+      message: string;
+    }> = [];
+    let hasFailure = false;
+
+    console.log("Starting scheduled sync");
+
+    try {
+      for (const moduleId of scheduledModuleIds) {
+        const module = findModuleById(moduleId);
+
+        if (!module) {
+          syncOutcomes.push({
+            moduleId,
+            status: "skipped",
+            message: "Module is not registered.",
+          });
+          console.log(`[skipped] ${moduleId}: module is not registered`);
+          continue;
+        }
+
+        if (!module.ingest) {
+          syncOutcomes.push({
+            moduleId,
+            status: "skipped",
+            message: "Module does not support ingestion.",
+          });
+          console.log(`[skipped] ${moduleId}: no ingestion function`);
+          continue;
+        }
+
+        console.log(`[running] ${moduleId}`);
+        const outcome = await runModuleIngest(prisma, module);
+
+        if (outcome.status === "failed") {
+          hasFailure = true;
+          syncOutcomes.push({
+            moduleId,
+            status: "failed",
+            message: outcome.message,
+          });
+          console.log(`[failed] ${moduleId}: ${outcome.message}`);
+          continue;
+        }
+
+        const recordsProcessed = outcome.result.recordsProcessed ?? 0;
+        syncOutcomes.push({
+          moduleId,
+          status: "success",
+          message: `${recordsProcessed} records processed.`,
+        });
+        console.log(`[success] ${moduleId}: ${recordsProcessed} records processed`);
+      }
+
+      console.log("[running] compliance-evaluation");
+      const evaluationOutcome = await runComplianceEvaluation(prisma);
+
+      if (evaluationOutcome.status === "failed") {
+        hasFailure = true;
+        console.log(
+          `[failed] compliance-evaluation: ${evaluationOutcome.message}`,
+        );
+      } else {
+        console.log(
+          `[success] compliance-evaluation: ${evaluationOutcome.results.length} controls evaluated`,
+        );
+      }
+
+      console.log("");
+      console.log("Scheduled sync summary");
+      console.log("----------------------");
+
+      for (const outcome of syncOutcomes) {
+        console.log(`${outcome.status.toUpperCase()} ${outcome.moduleId}: ${outcome.message}`);
+      }
+
+      console.log(
+        `${evaluationOutcome.status.toUpperCase()} compliance-evaluation: ${evaluationOutcome.results.length} controls evaluated (${evaluationOutcome.summary.pass} pass, ${evaluationOutcome.summary.fail} fail, ${evaluationOutcome.summary.unknown} unknown)`,
+      );
+
+      if (hasFailure) {
+        process.exitCode = 1;
+      }
+    } finally {
+      await prisma.$disconnect();
+    }
   });
 
 await program.parseAsync(process.argv);

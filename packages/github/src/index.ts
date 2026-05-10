@@ -73,6 +73,7 @@ export interface GitHubDependabotAlert {
   created_at?: string;
   updated_at?: string;
   fixed_at?: string | null;
+  dismissed_at?: string | null;
 }
 
 export interface GitHubEnvironment {
@@ -293,6 +294,7 @@ export class GitHubClient {
         `/repos/${owner}/${repo}/dependabot/alerts`,
         {
           per_page: 100,
+          state: "open,dismissed,fixed,auto_dismissed",
         },
       ),
     );

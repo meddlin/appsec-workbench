@@ -113,6 +113,11 @@ a {
   line-height: 1;
 }
 
+.metric-value-text {
+  font-size: 22px;
+  text-transform: capitalize;
+}
+
 .section {
   margin-top: 22px;
 }
@@ -159,6 +164,42 @@ tr:last-child td {
 
 .muted {
   color: var(--muted);
+}
+
+.table-link {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+.detail-grid {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  overflow: hidden;
+}
+
+.detail-grid > div {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 72px;
+  padding: 14px;
+}
+
+.detail-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .badge {

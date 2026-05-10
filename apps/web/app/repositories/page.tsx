@@ -1,4 +1,5 @@
 import { prisma } from "@github-inventory/db";
+import Link from "next/link";
 import { formatBoolean, formatDateTime } from "../ui";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +9,11 @@ export default async function RepositoriesPage() {
     include: {
       organization: true,
       setting: true,
+      dependabotAlerts: {
+        select: {
+          state: true,
+        },
+      },
     },
     orderBy: {
       fullName: "asc",
@@ -35,24 +41,36 @@ export default async function RepositoriesPage() {
                 <th>Archived</th>
                 <th>Branch Protection</th>
                 <th>Secret Scanning</th>
+                <th>Open Dependabot Alerts</th>
                 <th>Updated</th>
               </tr>
             </thead>
             <tbody>
-              {repositories.map((repository) => (
-                <tr key={repository.id}>
-                  <td>{repository.fullName}</td>
-                  <td>{repository.organization.login}</td>
-                  <td>
-                    <span className="badge">{repository.visibility}</span>
-                  </td>
-                  <td>{repository.defaultBranch ?? "-"}</td>
-                  <td>{formatBoolean(repository.archived)}</td>
-                  <td>{formatBoolean(repository.setting?.hasBranchProtection)}</td>
-                  <td>{formatBoolean(repository.setting?.hasSecretScanning)}</td>
-                  <td>{formatDateTime(repository.updatedAt)}</td>
-                </tr>
-              ))}
+              {repositories.map((repository) => {
+                const openDependabotAlertCount = repository.dependabotAlerts.filter(
+                  (alert) => alert.state === "open",
+                ).length;
+
+                return (
+                  <tr key={repository.id}>
+                    <td>
+                      <Link className="table-link" href={`/repositories/${repository.id}`}>
+                        {repository.fullName}
+                      </Link>
+                    </td>
+                    <td>{repository.organization.login}</td>
+                    <td>
+                      <span className="badge">{repository.visibility}</span>
+                    </td>
+                    <td>{repository.defaultBranch ?? "-"}</td>
+                    <td>{formatBoolean(repository.archived)}</td>
+                    <td>{formatBoolean(repository.setting?.hasBranchProtection)}</td>
+                    <td>{formatBoolean(repository.setting?.hasSecretScanning)}</td>
+                    <td>{openDependabotAlertCount}</td>
+                    <td>{formatDateTime(repository.updatedAt)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

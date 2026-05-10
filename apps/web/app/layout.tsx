@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/repositories", label: "Repositories" },
+  { href: "/dependabot-alerts", label: "Dependabot Alerts" },
   { href: "/findings", label: "Findings" },
   { href: "/controls", label: "Controls" },
   { href: "/modules/runs", label: "Module Runs" },

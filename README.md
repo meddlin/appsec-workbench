@@ -1,8 +1,10 @@
 # GitHub Inventory
 
-GitHub Inventory is a local-first AppSec control plane for indie developers and small teams.
+GitHub Inventory is a local-first AppSec control plane for indie developers and
+small teams.
 
-This repository is a TypeScript monorepo managed with pnpm workspaces. It will contain:
+This repository is a TypeScript monorepo managed with pnpm workspaces. It will
+contain:
 
 - a CLI for GitHub ingestion and compliance evaluation
 - a Next.js web app for inventory and findings workflows
@@ -51,9 +53,13 @@ Run the real repository inventory sync:
 GITHUB_TOKEN=ghp_your_token GITHUB_OWNER=your-username-or-org pnpm --filter @github-inventory/cli appsec run repo-inventory
 ```
 
-For personal repositories, set `GITHUB_OWNER` to your GitHub username. For organization repositories, set it to the organization login. `GITHUB_OWNER_TYPE` can be `auto`, `user`, or `org`; `auto` tries organization repositories first, then falls back to user repositories.
+For personal repositories, set `GITHUB_OWNER` to your GitHub username. For
+organization repositories, set it to the organization login. `GITHUB_OWNER_TYPE`
+can be `auto`, `user`, or `org`; `auto` tries organization repositories first,
+then falls back to user repositories.
 
-Or set `GITHUB_TOKEN`, `GITHUB_OWNER`, and optionally `GITHUB_OWNER_TYPE` in `.env` before running:
+Or set `GITHUB_TOKEN`, `GITHUB_OWNER`, and optionally `GITHUB_OWNER_TYPE` in
+`.env` before running:
 
 ```bash
 pnpm --filter @github-inventory/cli appsec run repo-inventory
@@ -71,6 +77,21 @@ Run workspace checks:
 pnpm typecheck
 ```
 
+## Helpful Commands
+
+`pnpm --filter @github-inventory/web dev`
+
+- Start the local dev server
+
+`pnpm --filter @github-inventory/cli appsec sync scheduled`
+
+- Sets up scheduled jobs
+
+`pnpm db:studio`
+
+- Starts Prisma Studio on a local port
+
+
 ## First Milestone
 
 The first milestone is a working skeleton that can:
@@ -82,3 +103,14 @@ The first milestone is a working skeleton that can:
 5. share code through local workspace packages
 
 Business logic has not been implemented yet.
+
+## Future Modules
+
+- repo-inventory
+- branch-protection
+- dependabot-alerts
+- code-scanning-alerts
+- secret-scanning-alerts
+- license-inventory
+- actions-security
+- stale-repo-detection

@@ -20,6 +20,7 @@ export interface IngestResult {
   status: ModuleRunStatus;
   message?: string;
   recordsProcessed?: number;
+  summary?: Record<string, unknown>;
 }
 
 export type ControlEvaluationStatus = "pass" | "fail" | "unknown";
