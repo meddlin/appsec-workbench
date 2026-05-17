@@ -23,7 +23,7 @@ export default async function FindingsPage() {
   });
 
   return (
-    <>
+    <div className="wide-page">
       <div className="page-header">
         <h1>Findings</h1>
         <p>Actionable issues detected during module evaluation.</p>
@@ -67,6 +67,6 @@ export default async function FindingsPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -134,7 +134,7 @@ a {
   overflow-x: auto;
 }
 
-.repositories-page {
+.wide-page {
   margin-left: calc(50% - 50vw + 28px);
   width: calc(100vw - 56px);
 }
@@ -253,7 +253,7 @@ tr:last-child td {
     padding: 20px 16px;
   }
 
-  .repositories-page {
+  .wide-page {
     margin-left: calc(50% - 50vw + 16px);
     width: calc(100vw - 32px);
   }

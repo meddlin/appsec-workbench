@@ -30,7 +30,7 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <>
+    <div className="wide-page">
       <div className="page-header">
         <h1>Dashboard</h1>
         <p>Current inventory and AppSec evaluation summary.</p>
@@ -84,6 +84,6 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
-    </>
+    </div>
   );
 }
