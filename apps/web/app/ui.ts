@@ -46,6 +46,18 @@ export function dependabotStateClassName(state: string): string {
   return "warning";
 }
 
+export function codeQlStateClassName(state: string): string {
+  if (state === "open") {
+    return "danger";
+  }
+
+  if (state === "fixed" || state === "closed") {
+    return "success";
+  }
+
+  return "warning";
+}
+
 export function formatDependabotState(state: string): string {
   return state.replaceAll("_", " ");
 }

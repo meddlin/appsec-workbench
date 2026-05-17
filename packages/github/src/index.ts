@@ -76,6 +76,46 @@ export interface GitHubDependabotAlert {
   dismissed_at?: string | null;
 }
 
+export type GitHubCodeScanningAlertState = "open" | "dismissed" | "fixed" | "closed";
+
+export interface GitHubCodeScanningAlert {
+  number: number;
+  state: GitHubCodeScanningAlertState | string;
+  rule?: {
+    id?: string;
+    name?: string;
+    severity?: string;
+    security_severity_level?: string;
+    description?: string;
+  };
+  tool?: {
+    name?: string;
+    version?: string;
+  };
+  most_recent_instance?: {
+    ref?: string;
+    state?: string;
+    commit_sha?: string;
+    message?: {
+      text?: string;
+    };
+    location?: {
+      path?: string;
+      start_line?: number;
+      end_line?: number;
+    };
+  };
+  html_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  fixed_at?: string | null;
+  dismissed_at?: string | null;
+}
+
+export interface ListCodeScanningAlertsOptions {
+  toolName?: string;
+}
+
 export interface GitHubEnvironment {
   GITHUB_TOKEN?: string;
   GITHUB_OWNER?: string;
@@ -298,6 +338,40 @@ export class GitHubClient {
         },
       ),
     );
+  }
+
+  async listCodeScanningAlerts(
+    owner: string,
+    repo: string,
+    options: ListCodeScanningAlertsOptions = {},
+  ): Promise<GitHubCodeScanningAlert[]> {
+    const alertsByNumber = new Map<number, GitHubCodeScanningAlert>();
+    const states: GitHubCodeScanningAlertState[] = [
+      "open",
+      "dismissed",
+      "fixed",
+      "closed",
+    ];
+
+    for (const state of states) {
+      const alerts = await this.paginate<GitHubCodeScanningAlert>(
+        createGitHubApiUrl(
+          this.options.baseUrl,
+          `/repos/${owner}/${repo}/code-scanning/alerts`,
+          {
+            per_page: 100,
+            state,
+            tool_name: options.toolName,
+          },
+        ),
+      );
+
+      for (const alert of alerts) {
+        alertsByNumber.set(alert.number, alert);
+      }
+    }
+
+    return Array.from(alertsByNumber.values());
   }
 
   private async listOrganizationRepositories(): Promise<GitHubRepository[]> {
