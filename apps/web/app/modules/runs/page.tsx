@@ -16,7 +16,7 @@ export default async function ModuleRunsPage() {
   });
 
   return (
-    <>
+    <div className="wide-page">
       <div className="page-header">
         <h1>Module Runs</h1>
         <p>Recent ingestion and evaluation run history.</p>
@@ -58,6 +58,6 @@ export default async function ModuleRunsPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

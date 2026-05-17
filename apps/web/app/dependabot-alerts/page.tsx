@@ -47,7 +47,7 @@ export default async function DependabotAlertsPage() {
     ]);
 
   return (
-    <>
+    <div className="wide-page">
       <div className="page-header">
         <h1>Dependabot Alerts</h1>
         <p>GitHub Dependabot vulnerability alerts synced into the local database.</p>
@@ -130,6 +130,6 @@ export default async function DependabotAlertsPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

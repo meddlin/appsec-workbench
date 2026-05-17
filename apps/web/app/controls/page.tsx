@@ -20,7 +20,7 @@ export default async function ControlsPage() {
   });
 
   return (
-    <>
+    <div className="wide-page">
       <div className="page-header">
         <h1>Controls</h1>
         <p>Control definitions and related evaluation activity.</p>
@@ -58,6 +58,6 @@ export default async function ControlsPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }
