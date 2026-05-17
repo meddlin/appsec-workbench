@@ -134,6 +134,11 @@ a {
   overflow-x: auto;
 }
 
+.repositories-page {
+  margin-left: calc(50% - 50vw + 28px);
+  width: calc(100vw - 56px);
+}
+
 table {
   border-collapse: collapse;
   min-width: 760px;
@@ -246,6 +251,11 @@ tr:last-child td {
 
   .main {
     padding: 20px 16px;
+  }
+
+  .repositories-page {
+    margin-left: calc(50% - 50vw + 16px);
+    width: calc(100vw - 32px);
   }
 
   .page-header h1 {

@@ -21,7 +21,7 @@ export default async function RepositoriesPage() {
   });
 
   return (
-    <>
+    <div className="repositories-page">
       <div className="page-header">
         <h1>Repositories</h1>
         <p>Repository inventory stored in the local database.</p>
@@ -75,6 +75,6 @@ export default async function RepositoriesPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }
