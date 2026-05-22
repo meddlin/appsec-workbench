@@ -6,12 +6,16 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const [
     repositoryCount,
-    findingCount,
+    policyFindingCount,
+    codeQlFindingCount,
+    dependabotFindingCount,
     failingControls,
     latestModuleRuns,
   ] = await Promise.all([
     prisma.repository.count(),
     prisma.finding.count(),
+    prisma.codeQlAlert.count(),
+    prisma.dependabotAlert.count(),
     prisma.controlEvaluation.findMany({
       distinct: ["controlId"],
       select: {
@@ -28,6 +32,7 @@ export default async function DashboardPage() {
       take: 5,
     }),
   ]);
+  const findingCount = policyFindingCount + codeQlFindingCount + dependabotFindingCount;
 
   return (
     <div className="wide-page">

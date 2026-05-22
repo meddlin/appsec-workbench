@@ -20,6 +20,7 @@ const scheduledModuleIds = [
   "repo-inventory",
   "branch-protection",
   "dependabot-alerts",
+  "codeql-alerts",
 ];
 
 const logger: Logger = {

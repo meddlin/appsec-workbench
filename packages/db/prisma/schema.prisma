@@ -65,13 +65,14 @@ model Repository {
   githubUpdatedAt DateTime?
   organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   setting         RepositorySetting?
-  findings        Finding[]
-  dependabotAlerts DependabotAlert[]
-  evaluations     ControlEvaluation[]
-  exceptions      Exception[]
-  moduleRuns      ModuleRun[]
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  findings           Finding[]
+  dependabotAlerts   DependabotAlert[]
+  codeQlAlerts       CodeQlAlert[]
+  evaluations        ControlEvaluation[]
+  exceptions         Exception[]
+  moduleRuns         ModuleRun[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@index([organizationId])
 }
@@ -136,6 +137,43 @@ model DependabotAlert {
   repository             Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   createdAt              DateTime   @default(now())
   updatedAt              DateTime   @updatedAt
+
+  @@unique([repositoryId, githubNumber])
+  @@index([repositoryId])
+  @@index([state])
+  @@index([severity])
+  @@index([lastSeenAt])
+}
+
+model CodeQlAlert {
+  id                 String     @id @default(cuid())
+  repositoryId       String
+  githubNumber       Int
+  state              String
+  severity           String
+  githubRuleSeverity String?
+  ruleId             String?
+  ruleName           String?
+  ruleDescription    String?
+  toolName           String?
+  toolVersion        String?
+  path               String?
+  startLine          Int?
+  endLine            Int?
+  commitSha          String?
+  ref                String?
+  message            String?
+  htmlUrl            String?
+  githubCreatedAt    DateTime?
+  githubUpdatedAt    DateTime?
+  fixedAt            DateTime?
+  dismissedAt        DateTime?
+  raw                Json?
+  firstSeenAt        DateTime   @default(now())
+  lastSeenAt         DateTime   @default(now())
+  repository         Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@unique([repositoryId, githubNumber])
   @@index([repositoryId])

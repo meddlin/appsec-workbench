@@ -1,4 +1,5 @@
 import type { AppSecModule } from "@github-inventory/core";
+import { codeQlAlertsModule } from "./codeql-alerts";
 import { demoRepoInventoryModule } from "./demo-repo-inventory";
 import { dependabotAlertsModule } from "./dependabot-alerts";
 import { repoInventoryModule } from "./repo-inventory";
@@ -7,6 +8,7 @@ const registeredModules: AppSecModule[] = [
   demoRepoInventoryModule,
   repoInventoryModule,
   dependabotAlertsModule,
+  codeQlAlertsModule,
 ];
 
 export function listModules(): readonly AppSecModule[] {
