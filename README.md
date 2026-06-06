@@ -1,6 +1,6 @@
-# GitHub Inventory
+# AppSec Workbench
 
-GitHub Inventory is a local-first AppSec control plane for indie developers and
+AppSec Workbench is a local-first AppSec control plane for indie developers and
 small teams.
 
 This repository is a TypeScript monorepo managed with pnpm workspaces. It will

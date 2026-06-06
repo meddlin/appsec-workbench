@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GitHub Inventory",
+  title: "AppSec Workbench",
   description: "Local AppSec control plane",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
         <div className="shell">
           <header className="topbar">
             <Link className="brand" href="/dashboard">
-              GitHub Inventory
+              AppSec Workbench
             </Link>
             <nav className="nav" aria-label="Primary navigation">
               {navItems.map((item) => (
