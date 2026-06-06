@@ -1,6 +1,6 @@
 # Architecture
 
-GitHub Inventory is a local-first AppSec control plane built as a TypeScript monorepo.
+AppSec Workbench is a local-first AppSec control plane built as a TypeScript monorepo.
 
 ## Applications
 
