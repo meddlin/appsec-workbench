@@ -1,4 +1,4 @@
-import type { AppSecModule, ControlEvaluationResult } from "@github-inventory/core";
+import type { AppSecModule, ControlEvaluationResult } from "@appsec-workbench/core";
 
 const demoRepositories = [
   {
@@ -47,7 +47,7 @@ export const demoRepoInventoryModule: AppSecModule = {
   name: "Demo Repository Inventory",
   description: "Seeds fake repository inventory for local development.",
   async ingest(ctx) {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
 
     ctx.logger.info("Seeding demo repository inventory");
 
@@ -118,7 +118,7 @@ export const demoRepoInventoryModule: AppSecModule = {
     };
   },
   async evaluate(ctx) {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
 
     ctx.logger.info("Evaluating demo repository inventory");
 

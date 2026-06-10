@@ -1,16 +1,16 @@
 {
-  "name": "github-inventory",
+  "name": "appsec-workbench",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "dev:web": "pnpm --filter @github-inventory/web dev",
-    "cli": "pnpm --filter @github-inventory/cli",
-    "db:generate": "pnpm --filter @github-inventory/db db:generate",
-    "db:migrate": "pnpm --filter @github-inventory/db db:migrate",
-    "db:studio": "pnpm --filter @github-inventory/db db:studio"
+    "dev:web": "pnpm --filter @appsec-workbench/web dev",
+    "cli": "pnpm --filter @appsec-workbench/cli",
+    "db:generate": "pnpm --filter @appsec-workbench/db db:generate",
+    "db:migrate": "pnpm --filter @appsec-workbench/db db:migrate",
+    "db:studio": "pnpm --filter @appsec-workbench/db db:studio"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@github-inventory/db"],
+  transpilePackages: ["@appsec-workbench/db"],
 };
 
 export default nextConfig;

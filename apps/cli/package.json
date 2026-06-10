@@ -1,5 +1,5 @@
 {
-  "name": "@github-inventory/cli",
+  "name": "@appsec-workbench/cli",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,9 +13,9 @@
     "appsec": "tsx src/index.ts"
   },
   "dependencies": {
-    "@github-inventory/core": "workspace:*",
-    "@github-inventory/db": "workspace:*",
-    "@github-inventory/modules": "workspace:*",
+    "@appsec-workbench/core": "workspace:*",
+    "@appsec-workbench/db": "workspace:*",
+    "@appsec-workbench/modules": "workspace:*",
     "commander": "^14.0.0"
   },
   "devDependencies": {

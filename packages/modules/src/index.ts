@@ -1,4 +1,4 @@
-import type { AppSecModule } from "@github-inventory/core";
+import type { AppSecModule } from "@appsec-workbench/core";
 import { codeQlAlertsModule } from "./codeql-alerts";
 import { demoRepoInventoryModule } from "./demo-repo-inventory";
 import { dependabotAlertsModule } from "./dependabot-alerts";

@@ -1,5 +1,5 @@
 {
-  "name": "@github-inventory/github",
+  "name": "@appsec-workbench/github",
   "version": "0.1.0",
   "private": true,
   "type": "module",
