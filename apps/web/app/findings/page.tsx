@@ -1,4 +1,4 @@
-import { prisma } from "@github-inventory/db";
+import { prisma } from "@appsec-workbench/db";
 import Link from "next/link";
 import {
   codeQlStateClassName,

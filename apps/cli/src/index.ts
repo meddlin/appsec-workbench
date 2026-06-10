@@ -10,9 +10,9 @@ import type {
   IngestResult,
   Logger,
   ModuleContext,
-} from "@github-inventory/core";
-import type { Prisma, PrismaClient } from "@github-inventory/db";
-import { findModuleById, listModules } from "@github-inventory/modules";
+} from "@appsec-workbench/core";
+import type { Prisma, PrismaClient } from "@appsec-workbench/db";
+import { findModuleById, listModules } from "@appsec-workbench/modules";
 
 loadRootEnv();
 
@@ -314,7 +314,7 @@ program
       return;
     }
 
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
 
     try {
       const outcome = await runModuleIngest(prisma, module);
@@ -335,7 +335,7 @@ program
   .command("evaluate")
   .description("Evaluate controls for modules that support evaluation")
   .action(async () => {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
 
     try {
       const outcome = await runComplianceEvaluation(prisma);
@@ -363,7 +363,7 @@ syncCommand
   .command("scheduled")
   .description("Run the scheduled sync entrypoint")
   .action(async () => {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
     const syncOutcomes: Array<{
       moduleId: string;
       status: "success" | "failed" | "skipped";

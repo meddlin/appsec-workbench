@@ -50,7 +50,7 @@ pnpm db:studio
 Run the real repository inventory sync:
 
 ```bash
-GITHUB_TOKEN=ghp_your_token GITHUB_OWNER=your-username-or-org pnpm --filter @github-inventory/cli appsec run repo-inventory
+GITHUB_TOKEN=ghp_your_token GITHUB_OWNER=your-username-or-org pnpm --filter @appsec-workbench/cli appsec run repo-inventory
 ```
 
 For personal repositories, set `GITHUB_OWNER` to your GitHub username. For
@@ -62,7 +62,7 @@ Or set `GITHUB_TOKEN`, `GITHUB_OWNER`, and optionally `GITHUB_OWNER_TYPE` in
 `.env` before running:
 
 ```bash
-pnpm --filter @github-inventory/cli appsec run repo-inventory
+pnpm --filter @appsec-workbench/cli appsec run repo-inventory
 ```
 
 Stop local Postgres:
@@ -79,11 +79,11 @@ pnpm typecheck
 
 ## Helpful Commands
 
-`pnpm --filter @github-inventory/web dev`
+`pnpm --filter @appsec-workbench/web dev`
 
 - Start the local dev server
 
-`pnpm --filter @github-inventory/cli appsec sync scheduled`
+`pnpm --filter @appsec-workbench/cli appsec sync scheduled`
 
 - Sets up scheduled jobs
 

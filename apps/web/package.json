@@ -1,5 +1,5 @@
 {
-  "name": "@github-inventory/web",
+  "name": "@appsec-workbench/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@github-inventory/db": "workspace:*",
+    "@appsec-workbench/db": "workspace:*",
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -1,5 +1,5 @@
 {
-  "name": "@github-inventory/modules",
+  "name": "@appsec-workbench/modules",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@github-inventory/core": "workspace:*",
-    "@github-inventory/db": "workspace:*",
-    "@github-inventory/github": "workspace:*"
+    "@appsec-workbench/core": "workspace:*",
+    "@appsec-workbench/db": "workspace:*",
+    "@appsec-workbench/github": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

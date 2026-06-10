@@ -1,11 +1,11 @@
-import type { AppSecModule } from "@github-inventory/core";
-import type { Prisma } from "@github-inventory/db";
+import type { AppSecModule } from "@appsec-workbench/core";
+import type { Prisma } from "@appsec-workbench/db";
 import {
   createGitHubClientFromEnv,
   GitHubApiError,
   type GitHubDependabotAlert,
   type GitHubRepository,
-} from "@github-inventory/github";
+} from "@appsec-workbench/github";
 
 type RepositoryVisibility = "public" | "private" | "internal";
 
@@ -84,7 +84,7 @@ export const dependabotAlertsModule: AppSecModule = {
   name: "Dependabot Alerts",
   description: "Syncs Dependabot alerts from the GitHub REST API.",
   async ingest(ctx) {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
     const github = createGitHubClientFromEnv();
     const repositories = await github.listRepositories();
     const organizationsByLogin = new Map<string, string>();

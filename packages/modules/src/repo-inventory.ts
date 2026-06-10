@@ -1,5 +1,5 @@
-import type { AppSecModule } from "@github-inventory/core";
-import { createGitHubClientFromEnv, type GitHubRepository } from "@github-inventory/github";
+import type { AppSecModule } from "@appsec-workbench/core";
+import { createGitHubClientFromEnv, type GitHubRepository } from "@appsec-workbench/github";
 
 type RepositoryVisibility = "public" | "private" | "internal";
 
@@ -24,7 +24,7 @@ export const repoInventoryModule: AppSecModule = {
   name: "Repository Inventory",
   description: "Syncs repository inventory from the GitHub REST API.",
   async ingest(ctx) {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
     const github = createGitHubClientFromEnv();
     const repositories = await github.listRepositories();
     const organizationsByLogin = new Map<string, string>();

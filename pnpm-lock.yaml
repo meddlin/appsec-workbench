@@ -14,13 +14,13 @@ importers:
 
   apps/cli:
     dependencies:
-      '@github-inventory/core':
+      '@appsec-workbench/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@github-inventory/db':
+      '@appsec-workbench/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@github-inventory/modules':
+      '@appsec-workbench/modules':
         specifier: workspace:*
         version: link:../../packages/modules
       commander:
@@ -39,7 +39,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@github-inventory/db':
+      '@appsec-workbench/db':
         specifier: workspace:*
         version: link:../../packages/db
       next:
@@ -95,13 +95,13 @@ importers:
 
   packages/modules:
     dependencies:
-      '@github-inventory/core':
+      '@appsec-workbench/core':
         specifier: workspace:*
         version: link:../core
-      '@github-inventory/db':
+      '@appsec-workbench/db':
         specifier: workspace:*
         version: link:../db
-      '@github-inventory/github':
+      '@appsec-workbench/github':
         specifier: workspace:*
         version: link:../github
     devDependencies:

@@ -1,4 +1,4 @@
-import { prisma } from "@github-inventory/db";
+import { prisma } from "@appsec-workbench/db";
 import { formatDateTime, statusClassName } from "../../ui";
 
 export const dynamic = "force-dynamic";

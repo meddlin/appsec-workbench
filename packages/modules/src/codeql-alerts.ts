@@ -1,10 +1,10 @@
-import type { AppSecModule } from "@github-inventory/core";
-import type { Prisma } from "@github-inventory/db";
+import type { AppSecModule } from "@appsec-workbench/core";
+import type { Prisma } from "@appsec-workbench/db";
 import {
   createGitHubClientFromEnv,
   GitHubApiError,
   type GitHubCodeScanningAlert,
-} from "@github-inventory/github";
+} from "@appsec-workbench/github";
 
 type NormalizedCodeScanningSeverity =
   | "critical"
@@ -128,7 +128,7 @@ export const codeQlAlertsModule: AppSecModule = {
   name: "CodeQL Code Scanning Alerts",
   description: "Syncs CodeQL code scanning alerts from the GitHub REST API.",
   async ingest(ctx) {
-    const { prisma } = await import("@github-inventory/db");
+    const { prisma } = await import("@appsec-workbench/db");
     const github = createGitHubClientFromEnv();
     const repositories = await prisma.repository.findMany({
       orderBy: {
