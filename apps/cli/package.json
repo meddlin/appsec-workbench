@@ -16,7 +16,7 @@
     "@appsec-workbench/core": "workspace:*",
     "@appsec-workbench/db": "workspace:*",
     "@appsec-workbench/modules": "workspace:*",
-    "commander": "^14.0.0"
+    "commander": "^15.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
