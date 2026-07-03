@@ -13,7 +13,7 @@
     "db:studio": "cd ../.. && prisma studio --schema packages/db/prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.0"
+    "@prisma/client": "^7.8.0"
   },
   "devDependencies": {
     "prisma": "^7.8.0",
