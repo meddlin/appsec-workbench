@@ -1,0 +1,52 @@
+name: Opengrep SAST
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  opengrep:
+    name: Opengrep
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Install Opengrep
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl -fsSL \
+            https://raw.githubusercontent.com/opengrep/opengrep/19a2dd0a3c964370d58ebc67e8ad7ce42079b665/install.sh \
+            -o install-opengrep.sh
+          bash install-opengrep.sh -v v1.20.0 --verify-signatures
+          echo "${HOME}/.opengrep/cli/latest" >> "${GITHUB_PATH}"
+          "${HOME}/.opengrep/cli/latest/opengrep" --version
+
+      - name: Run Opengrep
+        id: opengrep
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          opengrep scan --config auto --sarif-output opengrep.sarif --error --disable-version-check .
+
+      - name: Upload Opengrep SARIF
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('opengrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
+        with:
+          sarif_file: opengrep.sarif
+
+      - name: Fail on Opengrep findings
+        if: steps.opengrep.outcome == 'failure'
+        shell: bash
+        run: exit 1

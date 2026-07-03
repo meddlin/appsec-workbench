@@ -100,3 +100,14 @@ Create a working skeleton that can:
 3. run a CLI command
 4. start a Next.js web app
 5. share code through local workspace packages
+
+## Security & Configuration Tips
+
+- Keep secrets out of the repository.
+- Use OWASP Top 10 as a guide for secure coding practices.
+
+## CI And Security
+
+- Keep external GitHub Actions pinned to immutable commit SHAs and preserve the source tag comment.
+- When adding downloaded CI tools or binaries, pin versions and verify checksums.
+- Do not weaken workflow permissions; prefer least privilege.
