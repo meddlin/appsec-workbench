@@ -12,7 +12,7 @@
     "@appsec-workbench/db": "workspace:*",
     "next": "^16.2.10",
     "react": "^19.2.7",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
