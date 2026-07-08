@@ -1,9 +1,22 @@
 import { prisma } from "@appsec-workbench/db";
+import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
 import { formatDateTime, statusClassName } from "../ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  try {
+    return await DashboardContent();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+
+async function DashboardContent() {
   const [
     repositoryCount,
     policyFindingCount,

@@ -1,9 +1,22 @@
 import { prisma } from "@appsec-workbench/db";
+import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
 import { formatDateTime } from "../ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function ControlsPage() {
+  try {
+    return await ControlsContent();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+
+async function ControlsContent() {
   const controls = await prisma.control.findMany({
     include: {
       _count: {
