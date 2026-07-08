@@ -1,5 +1,6 @@
 import { prisma } from "@appsec-workbench/db";
 import Link from "next/link";
+import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
 import {
   codeQlStateClassName,
   dependabotStateClassName,
@@ -32,6 +33,18 @@ function formatCodeQlLocation(
 }
 
 export default async function FindingsPage() {
+  try {
+    return await FindingsContent();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+
+async function FindingsContent() {
   const [findings, dependabotAlerts, codeQlAlerts] = await Promise.all([
     prisma.finding.findMany({
       include: {

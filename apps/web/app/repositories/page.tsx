@@ -1,10 +1,23 @@
 import { prisma } from "@appsec-workbench/db";
 import Link from "next/link";
+import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
 import { formatBoolean, formatDateTime } from "../ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function RepositoriesPage() {
+  try {
+    return await RepositoriesContent();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+
+async function RepositoriesContent() {
   const repositories = await prisma.repository.findMany({
     include: {
       organization: true,

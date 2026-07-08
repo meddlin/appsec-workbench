@@ -1,5 +1,6 @@
 import { prisma } from "@appsec-workbench/db";
 import { notFound } from "next/navigation";
+import { DatabaseUnavailable, isDatabaseUnavailableError } from "../../db-error";
 import {
   dependabotStateClassName,
   formatBoolean,
@@ -11,6 +12,22 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function RepositoryDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  try {
+    return await RepositoryDetailContent({ params });
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+
+async function RepositoryDetailContent({
   params,
 }: {
   params: Promise<{ id: string }>;
