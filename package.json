@@ -6,6 +6,9 @@
   "scripts": {
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
+    "test:unit": "npm --prefix apps/web run test:unit && npm --prefix apps/cli run test:unit",
+    "test:unit:web": "npm --prefix apps/web run test:unit",
+    "test:unit:cli": "npm --prefix apps/cli run test:unit",
     "dev:web": "pnpm --filter @appsec-workbench/web dev",
     "cli": "pnpm --filter @appsec-workbench/cli",
     "db:generate": "pnpm --filter @appsec-workbench/db db:generate",
