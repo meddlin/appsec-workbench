@@ -30,7 +30,9 @@ export function DatabaseUnavailable() {
       </div>
 
       <div className="empty">
-        Start Postgres with <code>docker compose up -d postgres</code>, then run{" "}
+        Make sure <code>DATABASE_URL</code> is set in the repo root{" "}
+        <code>.env</code>, start Postgres with{" "}
+        <code>docker compose up -d postgres</code>, then run{" "}
         <code>pnpm db:migrate</code> before refreshing this page.
       </div>
     </div>
