@@ -22,6 +22,7 @@ async function DashboardContent() {
     policyFindingCount,
     codeQlFindingCount,
     dependabotFindingCount,
+    secretScanningFindingCount,
     failingControls,
     latestModuleRuns,
   ] = await Promise.all([
@@ -29,6 +30,7 @@ async function DashboardContent() {
     prisma.finding.count(),
     prisma.codeQlAlert.count(),
     prisma.dependabotAlert.count(),
+    prisma.secretScanningAlert.count(),
     prisma.controlEvaluation.findMany({
       distinct: ["controlId"],
       select: {
@@ -45,7 +47,11 @@ async function DashboardContent() {
       take: 5,
     }),
   ]);
-  const findingCount = policyFindingCount + codeQlFindingCount + dependabotFindingCount;
+  const findingCount =
+    policyFindingCount +
+    codeQlFindingCount +
+    dependabotFindingCount +
+    secretScanningFindingCount;
 
   return (
     <div className="wide-page">

@@ -58,6 +58,18 @@ export function codeQlStateClassName(state: string): string {
   return "warning";
 }
 
+export function secretScanningStateClassName(state: string): string {
+  if (state === "open") {
+    return "danger";
+  }
+
+  if (state === "resolved") {
+    return "success";
+  }
+
+  return "warning";
+}
+
 export function formatDependabotState(state: string): string {
   return state.replaceAll("_", " ");
 }

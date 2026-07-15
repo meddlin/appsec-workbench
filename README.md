@@ -65,6 +65,19 @@ Or set `GITHUB_TOKEN`, `GITHUB_OWNER`, and optionally `GITHUB_OWNER_TYPE` in
 pnpm --filter @appsec-workbench/cli appsec run repo-inventory
 ```
 
+Ingest GitHub secret scanning alerts after repository inventory has been synced:
+
+```bash
+pnpm --filter @appsec-workbench/cli appsec run secret-scanning-alerts
+```
+
+Fine-grained tokens need read access to **Secret scanning alerts** for the repositories being
+synced. Classic personal access tokens need the `repo` or `security_events` scope (`public_repo` is
+sufficient when accessing only public repositories). Secret values are requested in hidden form and
+are never stored by AppSec Workbench. See GitHub's [secret-scanning REST API
+documentation](https://docs.github.com/en/rest/secret-scanning/secret-scanning) for endpoint access
+details.
+
 Stop local Postgres:
 
 ```bash

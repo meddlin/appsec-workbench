@@ -18,6 +18,7 @@ loadRootEnv();
 
 const scheduledModuleIds = [
   "repo-inventory",
+  "secret-scanning-alerts",
   "branch-protection",
   "dependabot-alerts",
   "codeql-alerts",
