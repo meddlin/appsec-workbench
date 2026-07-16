@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm --filter @appsec-workbench/db db:generate && next build",
     "start": "next start",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:unit": "vitest run --passWithNoTests"
