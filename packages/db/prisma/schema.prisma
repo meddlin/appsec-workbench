@@ -50,28 +50,29 @@ model Organization {
 }
 
 model Repository {
-  id              String               @id @default(cuid())
-  organizationId  String
-  githubId        String?              @unique
-  name            String
-  fullName        String               @unique
-  visibility      RepositoryVisibility
-  defaultBranch   String?
-  primaryLanguage String?
-  archived        Boolean              @default(false)
-  pushedAt        DateTime?
-  githubCreatedAt DateTime?
-  githubUpdatedAt DateTime?
-  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  setting         RepositorySetting?
-  findings           Finding[]
-  dependabotAlerts   DependabotAlert[]
-  codeQlAlerts       CodeQlAlert[]
-  evaluations        ControlEvaluation[]
-  exceptions         Exception[]
-  moduleRuns         ModuleRun[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  id                   String                @id @default(cuid())
+  organizationId       String
+  githubId             String?               @unique
+  name                 String
+  fullName             String                @unique
+  visibility           RepositoryVisibility
+  defaultBranch        String?
+  primaryLanguage      String?
+  archived             Boolean               @default(false)
+  pushedAt             DateTime?
+  githubCreatedAt      DateTime?
+  githubUpdatedAt      DateTime?
+  organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  setting              RepositorySetting?
+  findings             Finding[]
+  dependabotAlerts     DependabotAlert[]
+  codeQlAlerts         CodeQlAlert[]
+  secretScanningAlerts SecretScanningAlert[]
+  evaluations          ControlEvaluation[]
+  exceptions           Exception[]
+  moduleRuns           ModuleRun[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   @@index([organizationId])
 }
@@ -178,6 +179,45 @@ model CodeQlAlert {
   @@index([repositoryId])
   @@index([state])
   @@index([severity])
+  @@index([lastSeenAt])
+}
+
+model SecretScanningAlert {
+  id                       String     @id @default(cuid())
+  repositoryId             String
+  githubNumber             Int
+  state                    String
+  resolution               String?
+  secretType               String
+  secretTypeDisplayName    String?
+  providerSlug             String?
+  validity                 String?
+  publiclyLeaked           Boolean?
+  multiRepo                Boolean?
+  base64Encoded            Boolean?
+  pushProtectionBypassed   Boolean?
+  path                     String?
+  startLine                Int?
+  endLine                  Int?
+  startColumn              Int?
+  endColumn                Int?
+  blobSha                  String?
+  commitSha                String?
+  htmlUrl                  String?
+  githubCreatedAt          DateTime?
+  resolvedAt               DateTime?
+  pushProtectionBypassedAt DateTime?
+  raw                      Json?
+  firstSeenAt              DateTime   @default(now())
+  lastSeenAt               DateTime   @default(now())
+  repository               Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @updatedAt
+
+  @@unique([repositoryId, githubNumber])
+  @@index([repositoryId])
+  @@index([state])
+  @@index([validity])
   @@index([lastSeenAt])
 }
 

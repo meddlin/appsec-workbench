@@ -13,11 +13,18 @@ import type {
 } from "@appsec-workbench/core";
 import type { Prisma, PrismaClient } from "@appsec-workbench/db";
 import { findModuleById, listModules } from "@appsec-workbench/modules";
+import {
+  listSecretScanningFindings,
+  parseFindingSource,
+  parseSecretScanningState,
+  printSecretScanningFindings,
+} from "./findings";
 
 loadRootEnv();
 
 const scheduledModuleIds = [
   "repo-inventory",
+  "secret-scanning-alerts",
   "branch-protection",
   "dependabot-alerts",
   "codeql-alerts",
@@ -294,6 +301,47 @@ modulesCommand
       console.log(`${module.id}\t${module.name}\t${module.description}`);
     }
   });
+
+const findingsCommand = program
+  .command("findings")
+  .description("Inspect stored AppSec findings");
+
+findingsCommand
+  .command("list")
+  .description("List stored findings")
+  .requiredOption("--source <source>", "Finding source")
+  .option("--state <state>", "Filter by finding state")
+  .option("--json", "Print findings as JSON", false)
+  .action(
+    async (options: {
+      source: string;
+      state?: string;
+      json: boolean;
+    }) => {
+      let state: ReturnType<typeof parseSecretScanningState>;
+
+      try {
+        parseFindingSource(options.source);
+        state = parseSecretScanningState(options.state);
+      } catch (error) {
+        console.error(getErrorMessage(error));
+        process.exitCode = 1;
+        return;
+      }
+
+      const { prisma } = await import("@appsec-workbench/db");
+
+      try {
+        const findings = await listSecretScanningFindings(prisma, state);
+        printSecretScanningFindings(findings, options.json);
+      } catch (error) {
+        console.error(`Failed to list findings: ${getErrorMessage(error)}`);
+        process.exitCode = 1;
+      } finally {
+        await prisma.$disconnect();
+      }
+    },
+  );
 
 program
   .command("run")

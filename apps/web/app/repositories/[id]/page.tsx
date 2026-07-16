@@ -6,6 +6,7 @@ import {
   formatBoolean,
   formatDateTime,
   formatDependabotState,
+  secretScanningStateClassName,
   severityClassName,
 } from "../../ui";
 
@@ -53,6 +54,19 @@ async function RepositoryDetailContent({
           },
         ],
       },
+      secretScanningAlerts: {
+        orderBy: [
+          {
+            state: "asc",
+          },
+          {
+            githubCreatedAt: "desc",
+          },
+          {
+            updatedAt: "desc",
+          },
+        ],
+      },
     },
   });
 
@@ -63,12 +77,15 @@ async function RepositoryDetailContent({
   const openDependabotAlertCount = repository.dependabotAlerts.filter(
     (alert) => alert.state === "open",
   ).length;
+  const openSecretScanningAlertCount = repository.secretScanningAlerts.filter(
+    (alert) => alert.state === "open",
+  ).length;
 
   return (
     <>
       <div className="page-header">
         <h1>{repository.fullName}</h1>
-        <p>Repository metadata and Dependabot alerts.</p>
+        <p>Repository metadata and security findings.</p>
       </div>
 
       <div className="metric-grid">
@@ -83,6 +100,16 @@ async function RepositoryDetailContent({
         <div className="metric">
           <div className="metric-label">Total Dependabot Alerts</div>
           <div className="metric-value">{repository.dependabotAlerts.length}</div>
+        </div>
+        <div className="metric">
+          <div className="metric-label">Open Secret Alerts</div>
+          <div className="metric-value">{openSecretScanningAlertCount}</div>
+        </div>
+        <div className="metric">
+          <div className="metric-label">Total Secret Alerts</div>
+          <div className="metric-value">
+            {repository.secretScanningAlerts.length}
+          </div>
         </div>
       </div>
 
@@ -122,6 +149,68 @@ async function RepositoryDetailContent({
             <span>{formatDateTime(repository.updatedAt)}</span>
           </div>
         </div>
+      </section>
+
+      <section className="section">
+        <h2>Secret Scanning Alerts</h2>
+        {repository.secretScanningAlerts.length === 0 ? (
+          <div className="empty">
+            No secret scanning alerts recorded for this repository.
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Secret Type</th>
+                  <th>State</th>
+                  <th>Validity</th>
+                  <th>Resolution</th>
+                  <th>First Location</th>
+                  <th>Publicly Leaked</th>
+                  <th>Push Protection Bypassed</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {repository.secretScanningAlerts.map((alert) => (
+                  <tr key={alert.id}>
+                    <td>
+                      {alert.htmlUrl ? (
+                        <a className="table-link" href={alert.htmlUrl}>
+                          {alert.secretTypeDisplayName ?? alert.secretType}
+                        </a>
+                      ) : (
+                        (alert.secretTypeDisplayName ?? alert.secretType)
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${secretScanningStateClassName(alert.state)}`}
+                      >
+                        {formatDependabotState(alert.state)}
+                      </span>
+                    </td>
+                    <td>{alert.validity ?? "-"}</td>
+                    <td>
+                      {alert.resolution
+                        ? formatDependabotState(alert.resolution)
+                        : "-"}
+                    </td>
+                    <td>
+                      {alert.path
+                        ? `${alert.path}${alert.startLine ? `:${alert.startLine}` : ""}`
+                        : "-"}
+                    </td>
+                    <td>{formatBoolean(alert.publiclyLeaked)}</td>
+                    <td>{formatBoolean(alert.pushProtectionBypassed)}</td>
+                    <td>{formatDateTime(alert.lastSeenAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="section">

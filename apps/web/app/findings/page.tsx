@@ -6,13 +6,14 @@ import {
   dependabotStateClassName,
   formatDateTime,
   formatDependabotState,
+  secretScanningStateClassName,
   severityClassName,
   statusClassName,
 } from "../ui";
 
 export const dynamic = "force-dynamic";
 
-function formatCodeQlLocation(
+function formatAlertLocation(
   path: string | null,
   startLine: number | null,
   endLine: number | null,
@@ -21,7 +22,7 @@ function formatCodeQlLocation(
     return "-";
   }
 
-  if (!startLine) {
+  if (startLine === null) {
     return path;
   }
 
@@ -45,7 +46,8 @@ export default async function FindingsPage() {
 }
 
 async function FindingsContent() {
-  const [findings, dependabotAlerts, codeQlAlerts] = await Promise.all([
+  const [findings, dependabotAlerts, codeQlAlerts, secretScanningAlerts] =
+    await Promise.all([
     prisma.finding.findMany({
       include: {
         control: true,
@@ -92,6 +94,22 @@ async function FindingsContent() {
         },
         {
           githubUpdatedAt: "desc",
+        },
+        {
+          updatedAt: "desc",
+        },
+      ],
+    }),
+    prisma.secretScanningAlert.findMany({
+      include: {
+        repository: true,
+      },
+      orderBy: [
+        {
+          state: "asc",
+        },
+        {
+          githubCreatedAt: "desc",
         },
         {
           updatedAt: "desc",
@@ -171,7 +189,10 @@ async function FindingsContent() {
                 {codeQlAlerts.map((alert) => (
                   <tr key={alert.id}>
                     <td>
-                      <Link className="table-link" href={`/repositories/${alert.repositoryId}`}>
+                      <Link
+                        className="table-link"
+                        href={`/repositories/${alert.repositoryId}`}
+                      >
                         {alert.repository.fullName}
                       </Link>
                     </td>
@@ -195,7 +216,7 @@ async function FindingsContent() {
                       </span>
                     </td>
                     <td>
-                      {formatCodeQlLocation(
+                      {formatAlertLocation(
                         alert.path,
                         alert.startLine,
                         alert.endLine,
@@ -203,6 +224,70 @@ async function FindingsContent() {
                     </td>
                     <td>{alert.message ?? alert.ruleDescription ?? "-"}</td>
                     <td>{formatDateTime(alert.githubUpdatedAt ?? alert.updatedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="section">
+        <h2>Secret Scanning Findings</h2>
+        {secretScanningAlerts.length === 0 ? (
+          <div className="empty">No secret scanning findings recorded.</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Repository</th>
+                  <th>Secret Type</th>
+                  <th>State</th>
+                  <th>Validity</th>
+                  <th>Resolution</th>
+                  <th>First Location</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {secretScanningAlerts.map((alert) => (
+                  <tr key={alert.id}>
+                    <td>
+                      <Link className="table-link" href={`/repositories/${alert.repositoryId}`}>
+                        {alert.repository.fullName}
+                      </Link>
+                    </td>
+                    <td>
+                      {alert.htmlUrl ? (
+                        <a className="table-link" href={alert.htmlUrl}>
+                          {alert.secretTypeDisplayName ?? alert.secretType}
+                        </a>
+                      ) : (
+                        (alert.secretTypeDisplayName ?? alert.secretType)
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${secretScanningStateClassName(alert.state)}`}
+                      >
+                        {formatDependabotState(alert.state)}
+                      </span>
+                    </td>
+                    <td>{alert.validity ?? "-"}</td>
+                    <td>
+                      {alert.resolution
+                        ? formatDependabotState(alert.resolution)
+                        : "-"}
+                    </td>
+                    <td>
+                      {formatAlertLocation(
+                        alert.path,
+                        alert.startLine,
+                        alert.endLine,
+                      )}
+                    </td>
+                    <td>{formatDateTime(alert.lastSeenAt)}</td>
                   </tr>
                 ))}
               </tbody>

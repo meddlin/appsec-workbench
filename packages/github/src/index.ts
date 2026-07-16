@@ -112,6 +112,41 @@ export interface GitHubCodeScanningAlert {
   dismissed_at?: string | null;
 }
 
+export interface GitHubSecretScanningAlert {
+  number: number;
+  state: string;
+  resolution?: string | null;
+  secret_type?: string;
+  secret_type_display_name?: string;
+  provider_slug?: string;
+  validity?: string;
+  publicly_leaked?: boolean;
+  multi_repo?: boolean;
+  is_base64_encoded?: boolean;
+  push_protection_bypassed?: boolean;
+  first_location_detected?: {
+    path?: string;
+    start_line?: number;
+    end_line?: number;
+    start_column?: number;
+    end_column?: number;
+    blob_sha?: string;
+    commit_sha?: string;
+  } | null;
+  html_url?: string;
+  created_at?: string;
+  resolved_at?: string | null;
+  push_protection_bypassed_at?: string | null;
+}
+
+export function sanitizeGitHubSecretScanningAlert(
+  alert: GitHubSecretScanningAlert & { secret?: unknown },
+): GitHubSecretScanningAlert {
+  const sanitizedAlert = { ...alert };
+  delete sanitizedAlert.secret;
+  return sanitizedAlert;
+}
+
 export interface ListCodeScanningAlertsOptions {
   toolName?: string;
 }
@@ -372,6 +407,26 @@ export class GitHubClient {
     }
 
     return Array.from(alertsByNumber.values());
+  }
+
+  async listSecretScanningAlerts(
+    owner: string,
+    repo: string,
+  ): Promise<GitHubSecretScanningAlert[]> {
+    const alerts = await this.paginate<
+      GitHubSecretScanningAlert & { secret?: unknown }
+    >(
+      createGitHubApiUrl(
+        this.options.baseUrl,
+        `/repos/${owner}/${repo}/secret-scanning/alerts`,
+        {
+          per_page: 100,
+          hide_secret: true,
+        },
+      ),
+    );
+
+    return alerts.map(sanitizeGitHubSecretScanningAlert);
   }
 
   private async listOrganizationRepositories(): Promise<GitHubRepository[]> {

@@ -27,6 +27,11 @@ async function RepositoriesContent() {
           state: true,
         },
       },
+      secretScanningAlerts: {
+        select: {
+          state: true,
+        },
+      },
     },
     orderBy: {
       fullName: "asc",
@@ -54,6 +59,7 @@ async function RepositoriesContent() {
                 <th>Archived</th>
                 <th>Branch Protection</th>
                 <th>Secret Scanning</th>
+                <th>Open Secret Alerts</th>
                 <th>Open Dependabot Alerts</th>
                 <th>Updated</th>
               </tr>
@@ -63,6 +69,10 @@ async function RepositoriesContent() {
                 const openDependabotAlertCount = repository.dependabotAlerts.filter(
                   (alert) => alert.state === "open",
                 ).length;
+                const openSecretScanningAlertCount =
+                  repository.secretScanningAlerts.filter(
+                    (alert) => alert.state === "open",
+                  ).length;
 
                 return (
                   <tr key={repository.id}>
@@ -79,6 +89,7 @@ async function RepositoriesContent() {
                     <td>{formatBoolean(repository.archived)}</td>
                     <td>{formatBoolean(repository.setting?.hasBranchProtection)}</td>
                     <td>{formatBoolean(repository.setting?.hasSecretScanning)}</td>
+                    <td>{openSecretScanningAlertCount}</td>
                     <td>{openDependabotAlertCount}</td>
                     <td>{formatDateTime(repository.updatedAt)}</td>
                   </tr>
