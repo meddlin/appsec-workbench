@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { ThemeProvider } from "./theme-provider";
+import { TopBar } from "./top-bar";
 
 export const metadata: Metadata = {
   title: "AppSec Workbench",
   description: "Local AppSec control plane",
 };
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/repositories", label: "Repositories" },
-  { href: "/findings", label: "Findings" },
-  { href: "/controls", label: "Controls" },
-  { href: "/modules/runs", label: "Module Runs" },
-];
 
 export default function RootLayout({
   children,
@@ -23,21 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="shell">
-          <header className="topbar">
-            <Link className="brand" href="/dashboard">
-              AppSec Workbench
-            </Link>
-            <nav className="nav" aria-label="Primary navigation">
-              {navItems.map((item) => (
-                <Link href={item.href} key={item.href}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </header>
-          <main className="main">{children}</main>
-        </div>
+        <ThemeProvider>
+          <div className="shell">
+            <TopBar />
+            <main className="main">{children}</main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
