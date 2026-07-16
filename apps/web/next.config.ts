@@ -8,6 +8,8 @@ const appDirectory = dirname(fileURLToPath(import.meta.url));
 loadEnvConfig({ path: resolve(appDirectory, "../../.env") });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: resolve(appDirectory, "../.."),
   transpilePackages: ["@appsec-workbench/db"],
 };
 

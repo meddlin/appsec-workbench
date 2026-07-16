@@ -38,3 +38,18 @@ export function DatabaseUnavailable() {
     </div>
   );
 }
+
+export async function withDatabaseUnavailableFallback(
+  render: () => Promise<ReactNode>,
+): Promise<ReactNode> {
+  try {
+    return await render();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return <DatabaseUnavailable />;
+    }
+
+    throw error;
+  }
+}
+import type { ReactNode } from "react";

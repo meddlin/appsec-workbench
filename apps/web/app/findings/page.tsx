@@ -1,6 +1,7 @@
 import { prisma } from "@appsec-workbench/db";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
+import { withDatabaseUnavailableFallback } from "../db-error";
 import {
   codeQlStateClassName,
   dependabotStateClassName,
@@ -12,6 +13,9 @@ import {
 } from "../ui";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Findings",
+};
 
 function formatAlertLocation(
   path: string | null,
@@ -34,15 +38,7 @@ function formatAlertLocation(
 }
 
 export default async function FindingsPage() {
-  try {
-    return await FindingsContent();
-  } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
-    }
-
-    throw error;
-  }
+  return withDatabaseUnavailableFallback(FindingsContent);
 }
 
 async function FindingsContent() {

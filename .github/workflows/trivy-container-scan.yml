@@ -1,0 +1,62 @@
+name: Trivy container scan
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  container-scan:
+    name: Trivy container scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Pull Compose service images
+        run: docker compose pull --ignore-buildable
+
+      - name: Build Compose service images
+        run: docker compose build --pull
+
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.72.0
+          cache: true
+
+      - name: Scan Compose service images
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          images_output="$(docker compose config --images)"
+          if [[ -z "${images_output}" ]]; then
+            echo "::error::Docker Compose did not resolve any images to scan."
+            exit 1
+          fi
+
+          scan_failed=0
+
+          while IFS= read -r image; do
+            echo "::group::Trivy scan: ${image}"
+            if trivy image \
+              --scanners vuln \
+              --pkg-types os,library \
+              --severity CRITICAL \
+              --format table \
+              --exit-code 1 \
+              --no-progress \
+              "${image}"; then
+              echo "No critical vulnerabilities found in ${image}."
+            else
+              echo "::error::Trivy found critical vulnerabilities or failed to scan ${image}."
+              scan_failed=1
+            fi
+            echo "::endgroup::"
+          done < <(printf '%s\n' "${images_output}" | sort -u)
+
+          exit "${scan_failed}"

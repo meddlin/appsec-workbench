@@ -1,19 +1,15 @@
 import { prisma } from "@appsec-workbench/db";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../../db-error";
+import type { Metadata } from "next";
+import { withDatabaseUnavailableFallback } from "../../db-error";
 import { formatDateTime, statusClassName } from "../../ui";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Module Runs",
+};
 
 export default async function ModuleRunsPage() {
-  try {
-    return await ModuleRunsContent();
-  } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
-    }
-
-    throw error;
-  }
+  return withDatabaseUnavailableFallback(ModuleRunsContent);
 }
 
 async function ModuleRunsContent() {

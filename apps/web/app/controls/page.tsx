@@ -1,19 +1,15 @@
 import { prisma } from "@appsec-workbench/db";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
+import type { Metadata } from "next";
+import { withDatabaseUnavailableFallback } from "../db-error";
 import { formatDateTime } from "../ui";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Controls",
+};
 
 export default async function ControlsPage() {
-  try {
-    return await ControlsContent();
-  } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
-    }
-
-    throw error;
-  }
+  return withDatabaseUnavailableFallback(ControlsContent);
 }
 
 async function ControlsContent() {

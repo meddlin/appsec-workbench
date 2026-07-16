@@ -1,19 +1,15 @@
 import { prisma } from "@appsec-workbench/db";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
+import type { Metadata } from "next";
+import { withDatabaseUnavailableFallback } from "../db-error";
 import { formatDateTime, statusClassName } from "../ui";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function DashboardPage() {
-  try {
-    return await DashboardContent();
-  } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
-    }
-
-    throw error;
-  }
+  return withDatabaseUnavailableFallback(DashboardContent);
 }
 
 async function DashboardContent() {
