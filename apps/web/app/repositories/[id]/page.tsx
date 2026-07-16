@@ -1,6 +1,9 @@
-import { prisma } from "@appsec-workbench/db";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../../db-error";
+import {
+  isDatabaseUnavailableError,
+  withDatabaseUnavailableFallback,
+} from "../../db-error";
 import {
   dependabotStateClassName,
   formatBoolean,
@@ -9,23 +12,39 @@ import {
   secretScanningStateClassName,
   severityClassName,
 } from "../../ui";
+import { getRepository } from "./repository-query";
 
 export const dynamic = "force-dynamic";
 
-export default async function RepositoryDetailPage({
-  params,
-}: {
+type RepositoryDetailProps = {
   params: Promise<{ id: string }>;
-}) {
+};
+
+export async function generateMetadata({
+  params,
+}: RepositoryDetailProps): Promise<Metadata> {
+  const { id } = await params;
+
   try {
-    return await RepositoryDetailContent({ params });
+    const repository = await getRepository(id);
+    return {
+      title: repository?.fullName ?? "Repository not found",
+    };
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
+      return {
+        title: "Repository",
+      };
     }
 
     throw error;
   }
+}
+
+export default async function RepositoryDetailPage({
+  params,
+}: RepositoryDetailProps) {
+  return withDatabaseUnavailableFallback(() => RepositoryDetailContent({ params }));
 }
 
 async function RepositoryDetailContent({
@@ -34,41 +53,7 @@ async function RepositoryDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const repository = await prisma.repository.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      organization: true,
-      setting: true,
-      dependabotAlerts: {
-        orderBy: [
-          {
-            state: "asc",
-          },
-          {
-            githubUpdatedAt: "desc",
-          },
-          {
-            updatedAt: "desc",
-          },
-        ],
-      },
-      secretScanningAlerts: {
-        orderBy: [
-          {
-            state: "asc",
-          },
-          {
-            githubCreatedAt: "desc",
-          },
-          {
-            updatedAt: "desc",
-          },
-        ],
-      },
-    },
-  });
+  const repository = await getRepository(id);
 
   if (!repository) {
     notFound();

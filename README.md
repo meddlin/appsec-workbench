@@ -47,6 +47,22 @@ pnpm db:migrate
 pnpm db:studio
 ```
 
+Build and start the production web container after the database schema is up to date:
+
+```bash
+docker compose up -d --build web
+```
+
+The web app is available at `http://localhost:3000`. Its database-aware health endpoint is available
+at `http://localhost:3000/api/health`. Database migrations remain an explicit host operation; the web
+container never applies them automatically.
+
+For local web development without building the production container, run:
+
+```bash
+pnpm --filter @appsec-workbench/web dev
+```
+
 Run the real repository inventory sync:
 
 ```bash
@@ -91,7 +107,7 @@ pnpm --filter @appsec-workbench/cli appsec findings list --source secret-scannin
 pnpm --filter @appsec-workbench/cli appsec findings list --source secret-scanning --json
 ```
 
-Stop local Postgres:
+Stop the local services:
 
 ```bash
 docker compose down

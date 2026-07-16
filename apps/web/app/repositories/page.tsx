@@ -1,23 +1,47 @@
 import { prisma } from "@appsec-workbench/db";
-import { DatabaseUnavailable, isDatabaseUnavailableError } from "../db-error";
+import type { Metadata } from "next";
+import { withDatabaseUnavailableFallback } from "../db-error";
+import { toRepositoryTableRow } from "./repository-table-data";
 import { RepositoriesTable } from "./repositories-table";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Repositories",
+};
 
 export default async function RepositoriesPage() {
-  try {
+  return withDatabaseUnavailableFallback(async () => {
     const repositories = await prisma.repository.findMany({
-      include: {
-        organization: true,
-        setting: true,
-        dependabotAlerts: {
+      select: {
+        id: true,
+        fullName: true,
+        visibility: true,
+        defaultBranch: true,
+        archived: true,
+        updatedAt: true,
+        organization: {
           select: {
-            state: true,
+            login: true,
           },
         },
-        secretScanningAlerts: {
+        setting: {
           select: {
-            state: true,
+            hasBranchProtection: true,
+            hasSecretScanning: true,
+          },
+        },
+        _count: {
+          select: {
+            dependabotAlerts: {
+              where: {
+                state: "open",
+              },
+            },
+            secretScanningAlerts: {
+              where: {
+                state: "open",
+              },
+            },
           },
         },
       },
@@ -36,15 +60,9 @@ export default async function RepositoriesPage() {
         {repositories.length === 0 ? (
           <div className="empty">No repositories found.</div>
         ) : (
-          <RepositoriesTable repositories={repositories} />
+          <RepositoriesTable repositories={repositories.map(toRepositoryTableRow)} />
         )}
       </div>
     );
-  } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      return <DatabaseUnavailable />;
-    }
-
-    throw error;
-  }
+  });
 }
