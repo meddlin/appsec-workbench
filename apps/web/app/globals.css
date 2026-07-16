@@ -245,6 +245,13 @@ th {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+th:hover {
+  background: color-mix(in srgb, var(--border) 90%, var(--foreground) 10%);
 }
 
 tr:last-child td {
