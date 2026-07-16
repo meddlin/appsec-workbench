@@ -78,6 +78,19 @@ are never stored by AppSec Workbench. See GitHub's [secret-scanning REST API
 documentation](https://docs.github.com/en/rest/secret-scanning/secret-scanning) for endpoint access
 details.
 
+View stored secret scanning findings in the terminal:
+
+```bash
+pnpm --filter @appsec-workbench/cli appsec findings list --source secret-scanning
+```
+
+Filter to open alerts or emit machine-readable JSON:
+
+```bash
+pnpm --filter @appsec-workbench/cli appsec findings list --source secret-scanning --state open
+pnpm --filter @appsec-workbench/cli appsec findings list --source secret-scanning --json
+```
+
 Stop local Postgres:
 
 ```bash
