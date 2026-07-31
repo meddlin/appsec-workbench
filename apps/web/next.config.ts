@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const appDirectory = dirname(fileURLToPath(import.meta.url));
 
-loadEnvConfig({ path: resolve(appDirectory, "../../.env") });
+loadEnvConfig({ path: resolve(appDirectory, "../../.env"), quiet: true });
 
 const nextConfig: NextConfig = {
   output: "standalone",
