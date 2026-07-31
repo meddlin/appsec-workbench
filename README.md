@@ -33,19 +33,30 @@ Install dependencies:
 pnpm install
 ```
 
-Start local Postgres:
+Start the local development stack:
+
+```bash
+pnpm dev:local
+```
+
+This starts the local Postgres container, waits for the database to accept
+connections, generates Prisma client code, applies committed migrations, and
+starts the Next.js dev server at `http://localhost:3000`.
+It uses `DATABASE_URL` from the root `.env` when present, otherwise it defaults
+to the local Docker Compose database.
+
+The lower-level commands remain available for troubleshooting or targeted work:
 
 ```bash
 docker compose up -d postgres
-```
-
-Run Prisma commands:
-
-```bash
 pnpm db:generate
 pnpm db:migrate
+pnpm dev:web
 pnpm db:studio
 ```
+
+Use `pnpm db:migrate` when actively changing the Prisma schema and creating or
+applying development migrations.
 
 Build and start the production web container after the database schema is up to date:
 
@@ -60,7 +71,7 @@ container never applies them automatically.
 For local web development without building the production container, run:
 
 ```bash
-pnpm --filter @appsec-workbench/web dev
+pnpm dev:web
 ```
 
 Run the real repository inventory sync:

@@ -9,10 +9,12 @@
     "test:unit": "npm --prefix apps/web run test:unit && npm --prefix apps/cli run test:unit",
     "test:unit:web": "npm --prefix apps/web run test:unit",
     "test:unit:cli": "npm --prefix apps/cli run test:unit",
+    "dev:local": "node scripts/dev-local.mjs",
     "dev:web": "pnpm --filter @appsec-workbench/web dev",
     "cli": "pnpm --filter @appsec-workbench/cli",
     "db:generate": "pnpm --filter @appsec-workbench/db db:generate",
     "db:migrate": "pnpm --filter @appsec-workbench/db db:migrate",
+    "db:migrate:deploy": "pnpm --filter @appsec-workbench/db db:migrate:deploy",
     "db:studio": "pnpm --filter @appsec-workbench/db db:studio"
   },
   "devDependencies": {
